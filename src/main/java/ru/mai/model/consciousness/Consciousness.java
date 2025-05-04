@@ -1,12 +1,13 @@
 package ru.mai.model.consciousness;
 
-import ru.mai.config.SuccessRateConfigurationProperties;
-import ru.mai.config.TimeToFixConfigurationProperties;
+import ru.mai.config.property.SuccessRateConfigurationProperties;
+import ru.mai.config.property.TimeToCreateConfigurationProperties;
+import ru.mai.config.property.TimeToFixConfigurationProperties;
 import ru.mai.model.RepairablePrototype;
 
 import static ru.mai.config.Utils.CONSCIOUSNESS;
 
-public abstract class Consciousness<T> extends RepairablePrototype<T> {
+public abstract class Consciousness extends RepairablePrototype<Consciousness> {
 
     public abstract void activate();
 
@@ -18,6 +19,11 @@ public abstract class Consciousness<T> extends RepairablePrototype<T> {
     @Override
     public long calculateRepairTime(TimeToFixConfigurationProperties configuration) {
         return configuration.getByComponent().get(CONSCIOUSNESS) + super.calculateRepairTime(configuration);
+    }
+
+    @Override
+    public long calculateCreationTime(TimeToCreateConfigurationProperties configuration) {
+        return configuration.getByComponent().get(CONSCIOUSNESS) * super.calculateCreationTime(configuration);
     }
 
 }

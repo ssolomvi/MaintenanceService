@@ -6,7 +6,7 @@ import ru.mai.model.marker.ArtificialSoulComponentMarker;
 import static ru.mai.model.emotionChip.ArtificialEmotionChip.TABLE_ARTIFICIAL_EMOTION_CHIP;
 
 @Table(TABLE_ARTIFICIAL_EMOTION_CHIP)
-public class ArtificialEmotionChip extends EmotionChip<ArtificialEmotionChip> implements ArtificialSoulComponentMarker {
+public class ArtificialEmotionChip extends EmotionChip implements ArtificialSoulComponentMarker {
 
     public static final String TABLE_ARTIFICIAL_EMOTION_CHIP = "artificial_emotion_chip";
 

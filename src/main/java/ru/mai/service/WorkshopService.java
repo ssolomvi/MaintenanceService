@@ -6,15 +6,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.mai.config.ExecutorConfiguration;
-import ru.mai.config.SuccessRateConfigurationProperties;
-import ru.mai.config.TimeToFixConfigurationProperties;
+import ru.mai.config.property.ExecutorConfiguration;
+import ru.mai.config.property.SuccessRateConfigurationProperties;
+import ru.mai.config.property.TimeToFixConfigurationProperties;
 import ru.mai.model.RepairablePrototype;
-import ru.mai.model.RepairingResult;
+import ru.mai.model.enums.RepairingStatus;
 import ru.mai.service.pool.ComponentPool;
-import ru.mai.service.pool.UtilizationPool;
+import ru.mai.service.pool.WorkshopLog;
 
-import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,8 +28,9 @@ import java.util.concurrent.TimeUnit;
 public class WorkshopService {
 
     private static final Logger log = LoggerFactory.getLogger(WorkshopService.class);
+
     private final ComponentPool componentPool;
-    private final UtilizationPool utilizationPool;
+    private final WorkshopLog workshopLog;
 
     private final SuccessRateConfigurationProperties successRateConfigurationProperties;
     private final TimeToFixConfigurationProperties timeToFixConfigurationProperties;
@@ -37,26 +40,46 @@ public class WorkshopService {
 
     @Autowired
     public WorkshopService(ComponentPool componentPool,
-                           UtilizationPool utilizationPool,
+                           WorkshopLog workshopLog,
                            SuccessRateConfigurationProperties successRateConfigurationProperties,
                            TimeToFixConfigurationProperties timeToFixConfigurationProperties,
                            ExecutorConfiguration executorConfiguration,
-                           @Qualifier("workshopExecutor") ScheduledExecutorService executor) {
+                           @Qualifier("workshopScheduledExecutor") ScheduledExecutorService executor) {
         this.componentPool = componentPool;
-        this.utilizationPool = utilizationPool;
+        this.workshopLog = workshopLog;
 
         this.successRateConfigurationProperties = successRateConfigurationProperties;
         this.timeToFixConfigurationProperties = timeToFixConfigurationProperties;
 
         this.executor = executor;
-        this.queue = new LinkedBlockingQueue<>();
+        this.queue = new LinkedBlockingQueue<>(executorConfiguration.getQueueCapacity());
 
         scheduleQueuePolling(executorConfiguration);
     }
 
     public <T extends RepairablePrototype> void putForRepair(T component) {
         log.trace("Got {} to fix", component);
-        queue.add(component);
+        try {
+            queue.add(component);
+            workshopLog.put(component);
+            log.info("Adding to queue for repairing: {}. Remaining capacity: {}", component, queue.remainingCapacity());
+        } catch (IllegalStateException e) {
+            log.warn("Maximum capacity is reached, cannot process query for {}", component);
+        }
+    }
+
+    public List<RepairablePrototype> getActiveQueriesByPageAndCount(int page, int count) {
+        if (page < 0 || count < 1) return Collections.emptyList();
+        var snapshot = Arrays.asList(queue.toArray(new RepairablePrototype[0]));
+
+        var fromIndex = page * count;
+        var toIndex = fromIndex + count - 1;
+
+        if (fromIndex > snapshot.size() || toIndex >= snapshot.size()) {
+            return Collections.emptyList();
+        }
+
+        return snapshot.subList(fromIndex, toIndex);
     }
 
     private void scheduleQueuePolling(ExecutorConfiguration configuration) {
@@ -77,11 +100,7 @@ public class WorkshopService {
     }
 
     private <T extends RepairablePrototype> void fix(T component) {
-        component.setRepairingStartTime(LocalDateTime.now());
-
         var repairIsSuccessful = repair(component);
-
-        component.setRepairingEndTime(LocalDateTime.now());
 
         log.info("Repair result is {} for {}", repairIsSuccessful ? "successful" : "unsuccessful", component);
 
@@ -94,15 +113,14 @@ public class WorkshopService {
 
     private <T extends RepairablePrototype> void handleRepairIsSuccessful(T component) {
         component.setBroken(false);
-        component.setRepairingResult(RepairingResult.REPAIRED);
         componentPool.put(component);
+        workshopLog.refreshComponentStatus(component.getId(), RepairingStatus.SUCCESS);
         log.trace("Put cured component {} to pool!", component);
     }
 
     private <T extends RepairablePrototype> void handleRepairIsNotSuccessful(T component) {
         component.setBroken(true);
-        component.setRepairingResult(RepairingResult.FAILED);
-        utilizationPool.put(component);
+        workshopLog.refreshComponentStatus(component.getId(), RepairingStatus.FAILURE);
         log.trace("Soul component {} is not usable anymore... what a pity... sending for utilization!", component);
     }
 

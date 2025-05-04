@@ -3,13 +3,17 @@ package ru.mai;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import ru.mai.config.ExecutorConfiguration;
-import ru.mai.config.SuccessRateConfigurationProperties;
-import ru.mai.config.TimeToFixConfigurationProperties;
+import ru.mai.config.property.ExecutorConfiguration;
+import ru.mai.config.property.SuccessRateConfigurationProperties;
+import ru.mai.config.property.TimeToCreateConfigurationProperties;
+import ru.mai.config.property.TimeToFixConfigurationProperties;
 
 @SpringBootApplication
 @EnableConfigurationProperties(
-        {TimeToFixConfigurationProperties.class, SuccessRateConfigurationProperties.class, ExecutorConfiguration.class}
+        {TimeToFixConfigurationProperties.class,
+                SuccessRateConfigurationProperties.class,
+                TimeToCreateConfigurationProperties.class,
+                ExecutorConfiguration.class}
 )
 public class MaintenanceServiceApp {
 

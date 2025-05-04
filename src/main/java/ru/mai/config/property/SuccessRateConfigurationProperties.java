@@ -1,4 +1,4 @@
-package ru.mai.config;
+package ru.mai.config.property;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

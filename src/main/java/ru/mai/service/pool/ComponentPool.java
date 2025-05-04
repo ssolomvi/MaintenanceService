@@ -3,14 +3,15 @@ package ru.mai.service.pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.mai.model.RepairablePrototype;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("rawtypes")
-@Component
+@Repository
 public class ComponentPool {
 
     private static final Logger log = LoggerFactory.getLogger(ComponentPool.class);
@@ -59,6 +60,26 @@ public class ComponentPool {
             lock.unlock();
         }
 
+    }
+
+    public List<RepairablePrototype> getByPageAndCount(int page, int count) {
+        try {
+            lock.lock();
+
+            if (page < 0 || count < 1) {
+                return Collections.emptyList();
+            }
+
+            long skip = (long) page * count;
+            return pools.values().stream()
+                    .filter(Objects::nonNull)
+                    .flatMap(List::stream)
+                    .skip(skip)
+                    .limit(count)
+                    .collect(Collectors.toList());
+        } finally {
+            lock.unlock();
+        }
     }
 
 }

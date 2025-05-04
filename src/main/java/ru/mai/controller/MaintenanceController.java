@@ -24,13 +24,13 @@ public class MaintenanceController {
     @PostMapping("/human")
     public void cureHumanSoul(@RequestBody HumanSoul soul) {
         log.info("Got human soul to cure: {}", soul);
-        repairingService.repairSoul(soul);
+        repairingService.putForRepairing(soul);
     }
 
     @PostMapping("/artificial")
     public void cureArtificialSoul(@RequestBody ArtificialSoul soul) {
         log.info("Got artificial soul to cure: {}", soul);
-        repairingService.repairSoul(soul);
+        repairingService.putForRepairing(soul);
     }
 
 }

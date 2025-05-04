@@ -1,14 +1,14 @@
-package ru.mai.config;
+package ru.mai.config.async;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SchedulerThreadFactory implements ThreadFactory {
+public class NamingThreadFactory implements ThreadFactory {
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String prefix;
 
-    public SchedulerThreadFactory(String prefix) {
+    public NamingThreadFactory(String prefix) {
         this.prefix = prefix;
     }
 

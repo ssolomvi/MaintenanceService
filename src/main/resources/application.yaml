@@ -21,9 +21,19 @@ app:
     initialDelay: 1
     delay: 1
     queueCapacity: 50
-    workshop:
+    workshopScheduled:
       corePoolSize: 1
       maxPoolSize: 1
+      queueCapacity: 50
+    repairingServiceScheduled:
+      corePoolSize: 1
+      maxPoolSize: 2
+      queueCapacity: 50
+    repairingService:
+      corePoolSize: 1
+      maxPoolSize: 2
+      queueCapacity: 50
+      keepAliveTime: 5
   time-to-fix:
     byType:
       artificial: 10
@@ -32,6 +42,14 @@ app:
       consciousness: 10
       emotionChip: 5
       memoryModule: 7
+  time-to-create:
+    byType:
+      artificial: 1
+      human: 2
+    byComponent:
+      consciousness: 20
+      emotionChip: 10
+      memoryModule: 14
   success-rate:
     byType:
       artificial: 95

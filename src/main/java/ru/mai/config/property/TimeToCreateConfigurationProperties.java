@@ -1,11 +1,11 @@
-package ru.mai.config;
+package ru.mai.config.property;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 
-@ConfigurationProperties("app.time-to-fix")
-public class TimeToFixConfigurationProperties {
+@ConfigurationProperties("app.time-to-create")
+public class TimeToCreateConfigurationProperties {
 
     private Map<String, Long> byType;
 

@@ -24,6 +24,7 @@
 @startuml SoulRepairCenter
 skinparam style strictuml
 skinparam maxMessageSize 150
+skinparam monochrome true
 
 actor Клиент
 participant MaintenanceController
@@ -38,13 +39,13 @@ MaintenanceController->>RepairingService: Добавить в очередь з�
 MaintenanceController-->>Клиент: 200 OK
 loop Обработка очереди запросов\nна починку души (Scheduled)
     group Проверка исправности компонентов
-    alt#White #ADD1B2 Компонент исправен
+    alt  Компонент исправен
         RepairingService-->>RepairingService: Пропустить
-    else #LightGrey Компонент сломан
+    else Компонент сломан
         RepairingService->>ComponentPool: Поиск замены
-        alt#White #ADD1B2 Найден в пуле
+        alt Найден в пуле
             ComponentPool-->>RepairingService: Вернуть компонент
-        else #LightGrey Не найден
+        else Не найден
             RepairingService->>SoulComponentFactory: Создать новый компонент
             SoulComponentFactory-->>RepairingService: Вернуть компонент
         end
@@ -52,10 +53,10 @@ loop Обработка очереди запросов\nна починку д�
         WorkshopService->>WorkshopLog: Запись о запросе\nпо починке компонента (RepairingStatus.PENDING)
         loop Обработка очереди запросов\nна починку компонентов души (Scheduled)
             WorkshopService->>WorkshopService: Попытка ремонта
-            alt#White #ADD1B2 Ремонт успешный
+            alt  Ремонт успешный
                 WorkshopService->>ComponentPool: Добавить в пул
                 WorkshopService->>WorkshopLog: Обновить статус запроса\nпо починке компонента (RepairingStatus.SUCCESS)
-            else #LightGrey Ремонт безуспешный
+            else Ремонт безуспешный
                 WorkshopService->>WorkshopLog: Обновить статус запроса\nпо починке компонента (RepairingStatus.FAILURE)
             end
         end

@@ -47,7 +47,7 @@ public class ComponentProvider {
         return factory.createComponentBy(source);
     }
 
-    private SoulComponentFactory configureFactory(Object o) {
+    private <T extends RepairablePrototype<?>> SoulComponentFactory configureFactory(T o) {
         return o instanceof ArtificialSoulComponentMarker ? artificialSoulComponentFactory : humanSoulComponentFactory;
     }
 

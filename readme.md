@@ -19,5 +19,3 @@
 системы.
 
 ![Схема](img/scheme.png)
-
-// todo: logging, facade

@@ -1,6 +1,7 @@
 package ru.mai.controller;
 
-import jakarta.validation.constraints.Min;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/monitor")
+@Tag(name = "Maintenance facade controller", description = "Controller for getting info on current system state")
 public class MaintenanceFacadeController {
 
     @Autowired
@@ -31,67 +33,46 @@ public class MaintenanceFacadeController {
     @Autowired
     private RepairingService repairingService;
 
-    // todo: controller, queues, logging
-    //  журнал того что отправлено на ремонт
-    //  что отремонтировано
-    //  что утилизировано
-    // индексация page с 0
     @GetMapping("/component-pool")
-    public List<RepairablePrototype> getComponentPoolElements(@Min(0) @RequestParam int page,
-                                                              @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns elements currently available in component pool")
+    public List<RepairablePrototype> getComponentPoolElements(@RequestParam int page,
+                                                              @RequestParam int count) {
         return componentPool.getByPageAndCount(page, count);
     }
 
     @GetMapping("/active-queries")
-    public List<Soul> getActiveQueries(@Min(0) @RequestParam int page,
-                                       @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns queries to be processed by repairing service")
+    public List<Soul> getActiveQueries(@RequestParam int page,
+                                       @RequestParam int count) {
         return repairingService.getActiveQueriesByPageAndCount(page, count);
     }
 
     @GetMapping("/workshop")
-    public List<RepairablePrototype> getWorkshopQueries(@Min(0) @RequestParam int page,
-                                                        @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns queries to be processed by workshop service")
+    public List<RepairablePrototype> getWorkshopQueries(@RequestParam int page,
+                                                        @RequestParam int count) {
         return workshopService.getActiveQueriesByPageAndCount(page, count);
     }
 
     @GetMapping("/workshop-log")
-    public List<WorkshopLog.WorkshopLogEntity> getWorkshopLog(@Min(0) @RequestParam int page,
-                                                              @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns all components processed or in process by workshop service")
+    public List<WorkshopLog.WorkshopLogEntity> getWorkshopLog(@RequestParam int page,
+                                                              @RequestParam int count) {
         return workshopLog.getByPageAndSize(page, count);
     }
 
     @GetMapping("/repaired")
-    public List<WorkshopLog.WorkshopLogEntity> getRepaired(@Min(0) @RequestParam int page,
-                                                           @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns all repaired components processed by workshop service")
+    public List<WorkshopLog.WorkshopLogEntity> getRepaired(@RequestParam int page,
+                                                           @RequestParam int count) {
         return workshopLog.getRepairedByPageAndSize(page, count);
     }
 
     @GetMapping("/utilized")
-    public List<WorkshopLog.WorkshopLogEntity> getUtilized(@Min(0) @RequestParam int page,
-                                                           @Min(1) @RequestParam int count) {
+    @Operation(description = "Returns all utilized components processed by workshop service")
+    public List<WorkshopLog.WorkshopLogEntity> getUtilized(@RequestParam int page,
+                                                           @RequestParam int count) {
         return workshopLog.getUtilizedByPageAndSize(page, count);
     }
-
-    /*
-    @GetMapping("/component-pool")
-    public Page<RepairablePrototype> getComponentPoolElements(@ParameterObject Pageable pageable) {
-
-    }
-
-    @GetMapping("/active-queries")
-    public Page<RepairablePrototype> getActiveQueries(@ParameterObject Pageable pageable) {
-
-    }
-
-    @GetMapping("/workshop")
-    public Page<RepairablePrototype> getWorkshopElements(@ParameterObject Pageable pageable) {
-
-    }
-
-    @GetMapping("/utilized")
-    public Page<RepairablePrototype> getUtilized(@ParameterObject Pageable pageable) {
-
-    }
-    */
 
 }

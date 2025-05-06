@@ -1,9 +1,5 @@
 server:
   port: 8080
-logging:
-  level:
-    ru:
-      mai: TRACE
 spring:
   jackson:
     default-property-inclusion: non_empty
@@ -30,30 +26,30 @@ app:
       maxPoolSize: 2
       queueCapacity: 50
     repairingService:
-      corePoolSize: 1
-      maxPoolSize: 2
+      corePoolSize: 4
+      maxPoolSize: 5
       queueCapacity: 50
       keepAliveTime: 5
   time-to-fix:
     byType:
-      artificial: 10
-      human: 20
+      artificial: 1
+      human: 2
     byComponent:
-      consciousness: 10
-      emotionChip: 5
-      memoryModule: 7
+      consciousness: 10_000
+      emotionChip: 5_000
+      memoryModule: 7_000
   time-to-create:
     byType:
       artificial: 1
       human: 2
     byComponent:
-      consciousness: 20
-      emotionChip: 10
-      memoryModule: 14
+      consciousness: 15_000
+      emotionChip: 8_000
+      memoryModule: 11_000
   success-rate:
     byType:
       artificial: 95
-      human: 40
+      human: 80
     byComponent:
       consciousness: 80
       emotionChip: 85

@@ -14,6 +14,7 @@ import ru.mai.model.enums.RepairingStatus;
 import ru.mai.service.pool.ComponentPool;
 import ru.mai.service.pool.WorkshopLog;
 
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class WorkshopService {
 
     private static final Logger log = LoggerFactory.getLogger(WorkshopService.class);
+    private static final NumberFormat nFormat = NumberFormat.getInstance();
 
     private final ComponentPool componentPool;
     private final WorkshopLog workshopLog;
@@ -69,17 +71,26 @@ public class WorkshopService {
     }
 
     public List<RepairablePrototype> getActiveQueriesByPageAndCount(int page, int count) {
-        if (page < 0 || count < 1) return Collections.emptyList();
+        if (page < 0 || count < 1) {
+            log.warn("Incorrect page and count parameters passed. Page >= 0, count > 0");
+
+            return Collections.emptyList();
+        }
         var snapshot = Arrays.asList(queue.toArray(new RepairablePrototype[0]));
 
         var fromIndex = page * count;
-        var toIndex = fromIndex + count - 1;
+        var toIndex = Math.min(fromIndex + count - 1, snapshot.size() - 1);
 
-        if (fromIndex > snapshot.size() || toIndex >= snapshot.size()) {
+        if (fromIndex > snapshot.size() || toIndex < 0) {
+            log.info("Workshop's queue is empty");
+
             return Collections.emptyList();
         }
 
-        return snapshot.subList(fromIndex, toIndex);
+        var result = snapshot.subList(fromIndex, toIndex);
+        log.info("Found {} components in workshop's queue", result.size());
+
+        return result;
     }
 
     private void scheduleQueuePolling(ExecutorConfiguration configuration) {
@@ -95,11 +106,11 @@ public class WorkshopService {
         RepairablePrototype toRepair;
         if ((toRepair = queue.poll()) != null) {
             log.trace("Processing repairing of: {}", toRepair);
-            fix(toRepair);
+            handleComponentRepairing(toRepair);
         }
     }
 
-    private <T extends RepairablePrototype> void fix(T component) {
+    private <T extends RepairablePrototype> void handleComponentRepairing(T component) {
         var repairIsSuccessful = repair(component);
 
         log.info("Repair result is {} for {}", repairIsSuccessful ? "successful" : "unsuccessful", component);
@@ -124,32 +135,38 @@ public class WorkshopService {
         log.trace("Soul component {} is not usable anymore... what a pity... sending for utilization!", component);
     }
 
-    private long estimateRepairingTime(RepairablePrototype component) {
-        return component.calculateRepairTime(timeToFixConfigurationProperties);
-    }
-
     private boolean repair(RepairablePrototype component) {
+        var estimatedRepairingTime = calculateRepairingTime(component);
+        var successRate = calculateRepairSuccessRate(component);
+        log.info("Estimated repairing time is: {} ms with success rate: {}% for {}",
+                nFormat.format(estimatedRepairingTime), successRate, component);
+
         try {
-            var estimatedRepairingTime = estimateRepairingTime(component);
-            log.debug("Estimated repairing time is {} s for {}", estimatedRepairingTime, component);
-            Thread.sleep(estimateRepairingTime(component) * 1000);
+            Thread.sleep(estimatedRepairingTime);
         } catch (InterruptedException e) {
             log.error("Critical error, comparable to burnout, has happened while trying to repair: {}", e.getMessage());
+
             throw new RuntimeException(e);
         }
 
-        return calculateRepairSuccessWithSuccessRate(component);
+        return repairIsSuccess(successRate);
     }
 
-    private boolean calculateRepairSuccessWithSuccessRate(RepairablePrototype component) {
-        var rate = component.calculateRepairSuccess(successRateConfigurationProperties);
-        log.trace("Success rate is {} for component {}", rate, component);
+    private boolean repairIsSuccess(int rate) {
         return new Random().nextInt(100) < rate;
+    }
+
+    private int calculateRepairSuccessRate(RepairablePrototype component) {
+        return component.calculateRepairSuccess(successRateConfigurationProperties);
+    }
+
+    private long calculateRepairingTime(RepairablePrototype component) {
+        return component.calculateRepairTime(timeToFixConfigurationProperties);
     }
 
     @PreDestroy
     private void shutdownExecutorServiceAndAwaitTermination() {
-        log.debug("Shutting down the scheduled executor service");
+        log.info("Shutting down the scheduled executor service");
 
         executor.shutdown();
         try {

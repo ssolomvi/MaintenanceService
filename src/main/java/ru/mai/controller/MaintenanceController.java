@@ -1,5 +1,6 @@
 package ru.mai.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,14 @@ public class MaintenanceController {
     private RepairingService repairingService;
 
     @PostMapping("/human")
+    @Operation(description = "Request for human soul curing")
     public void cureHumanSoul(@RequestBody HumanSoul soul) {
         log.info("Got human soul to cure: {}", soul);
         repairingService.putForRepairing(soul);
     }
 
     @PostMapping("/artificial")
+    @Operation(description = "Request for artificial soul curing")
     public void cureArtificialSoul(@RequestBody ArtificialSoul soul) {
         log.info("Got artificial soul to cure: {}", soul);
         repairingService.putForRepairing(soul);

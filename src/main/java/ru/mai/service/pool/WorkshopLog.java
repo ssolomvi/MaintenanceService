@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WorkshopLog {
 
     private static final Logger log = LoggerFactory.getLogger(WorkshopLog.class);
-    private final Map<UUID, WorkshopLogEntity> workshopLog = new ConcurrentHashMap();
+    private final Map<UUID, WorkshopLogEntity> workshopLog = new ConcurrentHashMap<>();
 
     public void put(RepairablePrototype component) {
         var log = new WorkshopLogEntity();
@@ -40,43 +40,57 @@ public class WorkshopLog {
         workshopLog.put(id, component);
     }
 
-    public List<WorkshopLogEntity> getByPageAndSize(int page, int size) {
-        if (page < 0 || size < 1) return Collections.emptyList();
-
-        var fromIdx = page * size;
-        var toIdx = fromIdx + size - 1;
-        if (fromIdx > workshopLog.size() || toIdx >= workshopLog.size()) return Collections.emptyList();
-
-        return new ArrayList<>(workshopLog.values()).subList(fromIdx, toIdx);
+    public List<WorkshopLogEntity> getByPageAndSize(int page, int count) {
+        return getByPageAndSizeInner(page, count, null);
     }
 
-    public List<WorkshopLogEntity> getRepairedByPageAndSize(int page, int size) {
-        return getByStatusAndPageAndSize(RepairingStatus.SUCCESS, page, size);
+    public List<WorkshopLogEntity> getRepairedByPageAndSize(int page, int count) {
+        return getByPageAndSizeInner(page, count, RepairingStatus.SUCCESS);
     }
 
-    public List<WorkshopLogEntity> getUtilizedByPageAndSize(int page, int size) {
-        return getByStatusAndPageAndSize(RepairingStatus.FAILURE, page, size);
+    public List<WorkshopLogEntity> getUtilizedByPageAndSize(int page, int count) {
+        return getByPageAndSizeInner(page, count, RepairingStatus.FAILURE);
     }
 
-    private List<WorkshopLogEntity> getByStatusAndPageAndSize(RepairingStatus status, int page, int size) {
-        if (page < 0 || size < 1) return Collections.emptyList();
+    public List<WorkshopLogEntity> getByPageAndSizeInner(int page, int count, RepairingStatus status) {
+        if (page < 0 || count < 1) {
+            log.warn("Incorrect page and count parameters passed. Page >= 0, count > 0");
 
-        var fromIdx = page * size;
-        var toIdx = fromIdx + size - 1;
-
-        if (fromIdx > workshopLog.size() || toIdx >= workshopLog.size()) return Collections.emptyList();
-
-        var res = workshopLog.values().stream()
-                .filter(e -> status.equals(e.getRepairingStatus()))
-                .toList();
-
-        try {
-            return res.subList(fromIdx, toIdx);
-        } catch (IndexOutOfBoundsException e) {
             return Collections.emptyList();
         }
+
+        var snapshot = workshopLog.values();
+
+        if (status != null) {
+            snapshot = snapshot.stream()
+                    .filter(e -> status.equals(e.getRepairingStatus()))
+                    .toList();
+        }
+
+        var fromIndex = page * count;
+        var toIndex = Math.min(fromIndex + count - 1, snapshot.size() - 1);
+
+        if (fromIndex > snapshot.size() || toIndex < 0) {
+            if (status != null) {
+                log.info("Found no components in workshop's log with status {}", status);
+            } else {
+                log.info("Workshop's log is empty");
+            }
+
+            return Collections.emptyList();
+        }
+
+        var result = new ArrayList<>(snapshot).subList(fromIndex, toIndex);
+        if (status != null) {
+            log.info("Found {} components in workshop's log with status {}", result.size(), status);
+        } else {
+            log.info("Found {} components in workshop's log", result.size());
+        }
+
+        return result;
     }
 
+    @SuppressWarnings("rawtypes")
     public static class WorkshopLogEntity {
 
         private RepairablePrototype component;

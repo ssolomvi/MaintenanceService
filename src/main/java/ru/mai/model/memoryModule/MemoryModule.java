@@ -18,7 +18,7 @@ public abstract class MemoryModule extends RepairablePrototype<MemoryModule> {
 
     @Override
     public long calculateRepairTime(TimeToFixConfigurationProperties configuration) {
-        return configuration.getByComponent().get(MEMORY_MODULE) + super.calculateRepairTime(configuration);
+        return configuration.getByComponent().get(MEMORY_MODULE) * super.calculateRepairTime(configuration);
     }
 
     @Override

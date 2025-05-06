@@ -18,7 +18,7 @@ public abstract class EmotionChip extends RepairablePrototype<EmotionChip> {
 
     @Override
     public long calculateRepairTime(TimeToFixConfigurationProperties configuration) {
-        return configuration.getByComponent().get(EMOTION_CHIP) + super.calculateRepairTime(configuration);
+        return configuration.getByComponent().get(EMOTION_CHIP) * super.calculateRepairTime(configuration);
     }
 
     @Override

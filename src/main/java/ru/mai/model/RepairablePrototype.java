@@ -54,7 +54,7 @@ public abstract class RepairablePrototype<T> implements Prototype<T> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName();
+        return String.format("%s:%s", getClass().getSimpleName(), id);
     }
 
 }

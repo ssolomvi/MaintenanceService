@@ -40,4 +40,8 @@ public class Soul {
         this.memoryModule = memoryModule;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

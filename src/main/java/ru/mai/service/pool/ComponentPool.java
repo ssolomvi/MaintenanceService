@@ -67,16 +67,26 @@ public class ComponentPool {
             lock.lock();
 
             if (page < 0 || count < 1) {
+                log.warn("Incorrect page and count parameters passed. Page >= 0, count > 0");
                 return Collections.emptyList();
             }
 
             long skip = (long) page * count;
-            return pools.values().stream()
+
+            var toReturn = pools.values().stream()
                     .filter(Objects::nonNull)
                     .flatMap(List::stream)
                     .skip(skip)
                     .limit(count)
                     .collect(Collectors.toList());
+
+            if (toReturn.isEmpty()) {
+                log.info("Component pool is empty");
+            } else {
+                log.info("Found {} components in component pool", toReturn.size());
+            }
+
+            return toReturn;
         } finally {
             lock.unlock();
         }

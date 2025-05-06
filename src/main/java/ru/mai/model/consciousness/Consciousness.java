@@ -18,7 +18,7 @@ public abstract class Consciousness extends RepairablePrototype<Consciousness> {
 
     @Override
     public long calculateRepairTime(TimeToFixConfigurationProperties configuration) {
-        return configuration.getByComponent().get(CONSCIOUSNESS) + super.calculateRepairTime(configuration);
+        return configuration.getByComponent().get(CONSCIOUSNESS) * super.calculateRepairTime(configuration);
     }
 
     @Override

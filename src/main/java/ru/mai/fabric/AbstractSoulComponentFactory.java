@@ -8,9 +8,13 @@ import ru.mai.model.consciousness.Consciousness;
 import ru.mai.model.emotionChip.EmotionChip;
 import ru.mai.model.memoryModule.MemoryModule;
 
+import java.text.NumberFormat;
+
 public abstract class AbstractSoulComponentFactory implements SoulComponentFactory {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractSoulComponentFactory.class);
+    private static final NumberFormat nFormat = NumberFormat.getInstance();
+
     private final Consciousness consciousnessPrototype;
     private final MemoryModule memoryModulePrototype;
     private final EmotionChip emotionChipPrototype;
@@ -59,12 +63,12 @@ public abstract class AbstractSoulComponentFactory implements SoulComponentFacto
     @SuppressWarnings("rawtypes")
     private <T extends RepairablePrototype> T imitateComponentCreation(T component) {
         var creationTime = component.calculateCreationTime(configuration);
-        log.trace("Creating {} This will take {} ms", component, creationTime);
+        log.info("Creating {} This will take {} ms", component, nFormat.format(creationTime));
 
         try {
             Thread.sleep(creationTime);
         } catch (InterruptedException e) {
-            log.warn("Component creation was interrupted, {}", e);
+            log.warn("Component creation was interrupted: ", e);
         }
 
         //noinspection unchecked

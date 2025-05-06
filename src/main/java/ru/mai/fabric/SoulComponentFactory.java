@@ -8,8 +8,6 @@ import ru.mai.model.memoryModule.MemoryModule;
 @SuppressWarnings("rawtypes")
 public interface SoulComponentFactory {
 
-    // todo: configure creation time for components
-
     Consciousness createConsciousness();
 
     MemoryModule createMemoryModule();

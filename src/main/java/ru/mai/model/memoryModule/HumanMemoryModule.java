@@ -1,11 +1,8 @@
 package ru.mai.model.memoryModule;
 
-import org.springframework.data.relational.core.mapping.Table;
 import ru.mai.model.marker.HumanSoulComponentMarker;
 
-import static ru.mai.model.memoryModule.HumanMemoryModule.TABLE_HUMAN_MEMORY_MODULE;
-
-@Table(TABLE_HUMAN_MEMORY_MODULE)
+//@Table(TABLE_HUMAN_MEMORY_MODULE)
 public class HumanMemoryModule extends MemoryModule implements HumanSoulComponentMarker {
 
     public static final String TABLE_HUMAN_MEMORY_MODULE = "human_memory_module";

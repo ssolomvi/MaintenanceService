@@ -2,7 +2,6 @@ package ru.mai.service;
 
 import jakarta.annotation.PreDestroy;
 import org.apache.commons.lang3.BooleanUtils;
-import org.postgresql.shaded.com.ongres.scram.common.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +102,9 @@ public class RepairingService {
     }
 
     private void repairSoul(Soul soul) {
-        Preconditions.checkNotNull(soul, "Soul is not passed for repairing");
+        if (soul == null) {
+            throw new IllegalArgumentException("Soul is not passed for repairing");
+        }
 
         List<Future<RepairablePrototype>> results = new ArrayList<>();
         log.trace("Checking if consciousness needs curing...");

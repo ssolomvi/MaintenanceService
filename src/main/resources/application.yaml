@@ -5,13 +5,6 @@ spring:
     default-property-inclusion: non_empty
     parser:
       strict-duplicate-detection: true
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 123
-    hikari:
-      schema: duties
-      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:10}
 app:
   executor:
     initialDelay: 1
